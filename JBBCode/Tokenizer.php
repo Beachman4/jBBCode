@@ -12,48 +12,48 @@ namespace JBBCode;
 class Tokenizer
 {
 
-    /** @var integer[] the positions of tokens found during parsing */
     protected $tokens = array();
-
-    /** @var integer the number of the current token */
     protected $i = -1;
 
     /**
      * Constructs a tokenizer from the given string. The string will be tokenized
      * upon construction.
      *
-     * @param string $str the string to tokenize
+     * @param $str  the string to tokenize
      */
     public function __construct($str)
     {
-        $strLen = strlen($str);
-        $position = 0;
+        $strStart = 0;
+        for ($index = 0; $index < strlen($str); ++$index) {
+            if (']' == $str[$index] || '[' == $str[$index]) {
+                /* Are there characters in the buffer from a previous string? */
+                if ($strStart < $index) {
+                    array_push($this->tokens, substr($str, $strStart, $index - $strStart));
+                    $strStart = $index;
+                }
 
-        while ($position < $strLen) {
-            $offset = strcspn($str, '[]', $position);
-            //Have we hit a single ']' or '['?
-            if ($offset == 0) {
-                $this->tokens[] = $str[$position];
-                $position++;
-            } else {
-                $this->tokens[] = substr($str, $position, $offset);
-                $position += $offset;
+                /* Add the [ or ] to the tokens array. */
+                array_push($this->tokens, $str[$index]);
+                $strStart = $index+1;
             }
+        }
+
+        if ($strStart < strlen($str)) {
+            /* There are still characters in the buffer. Add them to the tokens. */
+            array_push($this->tokens, substr($str, $strStart, strlen($str) - $strStart));
         }
     }
 
     /**
-     * Returns true if there is another token in the token stream.
-     * @return boolean
+     * Returns true iff there is another token in the token stream.
      */
     public function hasNext()
     {
-        return isset($this->tokens[$this->i + 1]);
+        return count($this->tokens) > 1 + $this->i;
     }
 
     /**
      * Advances the token stream to the next token and returns the new token.
-     * @return null|string
      */
     public function next()
     {
@@ -66,7 +66,6 @@ class Tokenizer
 
     /**
      * Retrieves the current token.
-     * @return null|string
      */
     public function current()
     {
@@ -97,7 +96,6 @@ class Tokenizer
 
     /**
      * toString method that returns the entire string from the current index on.
-     * @return string
      */
     public function toString()
     {

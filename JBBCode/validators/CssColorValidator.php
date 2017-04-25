@@ -20,8 +20,7 @@ class CssColorValidator implements \JBBCode\InputValidator
      * Returns true if $input uses only valid CSS color value
      * characters.
      *
-     * @param string $input  the string to validate
-     * @return boolean
+     * @param $input  the string to validate
      */
     public function validate($input)
     {

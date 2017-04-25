@@ -16,8 +16,7 @@ class UrlValidator implements \JBBCode\InputValidator
     /**
      * Returns true iff $input is a valid url.
      *
-     * @param string $input  the string to validate
-     * @return boolean
+     * @param $input  the string to validate
      */
     public function validate($input)
     {

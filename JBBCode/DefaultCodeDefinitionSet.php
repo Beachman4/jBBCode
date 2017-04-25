@@ -16,7 +16,7 @@ require_once 'validators/UrlValidator.php';
 class DefaultCodeDefinitionSet implements CodeDefinitionSet
 {
 
-    /** @var CodeDefinition[] The default code definitions in this set. */
+    /* The default code definitions in this set. */
     protected $definitions = array();
 
     /**
@@ -26,48 +26,46 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
     {
         /* [b] bold tag */
         $builder = new CodeDefinitionBuilder('b', '<strong>{param}</strong>');
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
         /* [i] italics tag */
         $builder = new CodeDefinitionBuilder('i', '<em>{param}</em>');
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
-        /* [u] underline tag */
+        /* [u] italics tag */
         $builder = new CodeDefinitionBuilder('u', '<u>{param}</u>');
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
         $urlValidator = new \JBBCode\validators\UrlValidator();
 
         /* [url] link tag */
         $builder = new CodeDefinitionBuilder('url', '<a href="{param}">{param}</a>');
         $builder->setParseContent(false)->setBodyValidator($urlValidator);
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
         /* [url=http://example.com] link tag */
         $builder = new CodeDefinitionBuilder('url', '<a href="{option}">{param}</a>');
         $builder->setUseOption(true)->setParseContent(true)->setOptionValidator($urlValidator);
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
         /* [img] image tag */
         $builder = new CodeDefinitionBuilder('img', '<img src="{param}" />');
         $builder->setUseOption(false)->setParseContent(false)->setBodyValidator($urlValidator);
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
 
         /* [img=alt text] image tag */
-        $builder = new CodeDefinitionBuilder('img', '<img src="{param}" alt="{option}" />');
-        $builder->setUseOption(true)->setParseContent(false)->setBodyValidator($urlValidator);
-        $this->definitions[] = $builder->build();
+        $builder = new CodeDefinitionBuilder('img', '<img src="{param} alt="{option}" />');
+        $builder->setUseOption(true);
+        array_push($this->definitions, $builder->build());
 
         /* [color] color tag */
         $builder = new CodeDefinitionBuilder('color', '<span style="color: {option}">{param}</span>');
         $builder->setUseOption(true)->setOptionValidator(new \JBBCode\validators\CssColorValidator());
-        $this->definitions[] = $builder->build();
+        array_push($this->definitions, $builder->build());
     }
 
     /**
      * Returns an array of the default code definitions.
-     *
-     * @return CodeDefinition[]
      */
     public function getCodeDefinitions()
     {

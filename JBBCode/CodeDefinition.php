@@ -11,36 +11,38 @@ namespace JBBCode;
  */
 class CodeDefinition
 {
-    /** @var string NOTE: THIS PROPERTY SHOULD ALWAYS BE LOWERCASE; USE setTagName() TO ENSURE THIS */
+    /* NOTE: THIS PROPERTY SHOULD ALWAYS BE LOWERCASE; USE setTagName() TO ENSURE THIS */
     protected $tagName;
 
-    /** @var boolean Whether or not this CodeDefinition uses an option parameter. */
+    /* Whether or not this CodeDefinition uses an option parameter. */
     protected $useOption;
 
-    /** @var string The replacement text to be used for simple CodeDefinitions */
+    /* The replacement text to be used for simple CodeDefinitions */
     protected $replacementText;
 
-    /** @var boolean Whether or not to parse elements of this definition's contents */
+    /* Whether or not to parse elements of this definition's contents */
     protected $parseContent;
 
-    /** @var integer How many of this element type may be nested within each other */
+    /* How many of this element type may be nested within each other */
     protected $nestLimit;
 
-    /** @var integer How many of this element type have been seen */
+    /* How many of this element type have been seen */
     protected $elCounter;
 
-    /** @var InputValidator The input validator to run options through */
+    protected $modifyOption;
+
+    /* The input validator to run options through */
     protected $optionValidator;
 
-    /** @var InputValidator The input validator to run the body ({param}) through */
+    /* The input validator to run the body ({param}) through */
     protected $bodyValidator;
 
     /**
      * Constructs a new CodeDefinition.
      */
     public static function construct($tagName, $replacementText, $useOption = false,
-            $parseContent = true, $nestLimit = -1, $optionValidator = array(),
-            $bodyValidator = null)
+                                     $parseContent = true, $nestLimit = -1, $optionValidator = array(),
+                                     $bodyValidator = null, $optionModify = null)
     {
         $def = new CodeDefinition();
         $def->elCounter = 0;
@@ -50,9 +52,10 @@ class CodeDefinition
         $def->parseContent = $parseContent;
         $def->nestLimit = $nestLimit;
         $def->optionValidator = $optionValidator;
+        $def->modifyOption = $optionModify;
         $def->bodyValidator = $bodyValidator;
         return $def;
-     }
+    }
 
     /**
      * Constructs a new CodeDefinition.
@@ -78,8 +81,8 @@ class CodeDefinition
      * Determines if the arguments to the given element are valid based on
      * any validators attached to this CodeDefinition.
      *
-     * @param ElementNode $el  the ElementNode to validate
-     * @return boolean true if the ElementNode's {option} and {param} are OK, false if they're not
+     * @param $el  the ElementNode to validate
+     * @return true if the ElementNode's {option} and {param} are OK, false if they're not
      */
     public function hasValidInputs(ElementNode $el)
     {
@@ -113,9 +116,9 @@ class CodeDefinition
      * markup of the element. This is a commonly overridden class for custom CodeDefinitions
      * so that the content can be directly manipulated.
      *
-     * @param ElementNode $el  the element to return an html representation of
+     * @param $el  the element to return an html representation of
      *
-     * @return string the parsed html of this element (INCLUDING ITS CHILDREN)
+     * @return the parsed html of this element (INCLUDING ITS CHILDREN)
      */
     public function asHtml(ElementNode $el)
     {
@@ -127,11 +130,16 @@ class CodeDefinition
 
         if ($this->usesOption()) {
             $options = $el->getAttribute();
-            if(count($options)==1){
+            if (!is_null($this->modifyOption)) {
+                $vals = $this->modifyOption->modify($options['img']);
+                for($i = 0; $i < 2; $i++) {
+                    $count = $i + 1;
+                    $html = str_ireplace("{option$count}", $vals[$i], $html);
+                }
+            } elseif(count($options)==1){
                 $vals = array_values($options);
                 $html = str_ireplace('{option}', reset($vals), $html);
-            }
-            else{
+            } else{
                 foreach($options as $key => $val){
                     $html = str_ireplace('{' . $key . '}', $val, $html);
                 }
@@ -162,9 +170,9 @@ class CodeDefinition
      * Accepts an ElementNode that is defined by this CodeDefinition and returns the text
      * representation of the element. This may be overridden by a custom CodeDefinition.
      *
-     * @param ElementNode $el  the element to return a text representation of
+     * @param $el  the element to return a text representation of
      *
-     * @return string the text representation of $el
+     * @return  the text representation of $el
      */
     public function asText(ElementNode $el)
     {
@@ -181,7 +189,7 @@ class CodeDefinition
     /**
      * Returns the tag name of this code definition
      *
-     * @return string this definition's associated tag name
+     * @return this definition's associated tag name
      */
     public function getTagName()
     {
@@ -193,7 +201,7 @@ class CodeDefinition
      * CodeDefinition class was extended. For default, html replacement CodeDefinitions this returns the html
      * markup for the definition.
      *
-     * @return string the replacement text of this CodeDefinition
+     * @return the replacement text of this CodeDefinition
      */
     public function getReplacementText()
     {
@@ -203,7 +211,7 @@ class CodeDefinition
     /**
      * Returns whether or not this CodeDefinition uses the optional {option}
      *
-     * @return boolean true if this CodeDefinition uses the option, false otherwise
+     * @return true if this CodeDefinition uses the option, false otherwise
      */
     public function usesOption()
     {
@@ -211,10 +219,10 @@ class CodeDefinition
     }
 
     /**
-     * Returns whether or not this CodeDefinition parses elements contained within it,
+     * Returns whether or not this CodeDefnition parses elements contained within it,
      * or just treats its children as text.
      *
-     * @return boolean true if this CodeDefinition parses elements contained within itself
+     * @return true if this CodeDefinition parses elements contained within itself
      */
     public function parseContent()
     {
@@ -226,8 +234,6 @@ class CodeDefinition
      * nested together. If after parsing elements are nested beyond this limit, the
      * subtrees formed by those nodes will be removed from the parse tree. A nest
      * limit of -1 signifies no limit.
-     *
-     * @return integer
      */
     public function getNestLimit()
     {
@@ -239,7 +245,7 @@ class CodeDefinition
      *
      * @deprecated
      *
-     * @param string $tagName the new tag name of this definition
+     * @param the new tag name of this definition
      */
     public function setTagName($tagName)
     {
@@ -251,7 +257,7 @@ class CodeDefinition
      *
      * @deprecated
      *
-     * @param string $txt the new replacement text
+     * @param the new replacement text
      */
     public function setReplacementText($txt)
     {
